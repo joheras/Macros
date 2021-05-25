@@ -27,13 +27,14 @@ positColour = Dialog.getChoice();
 areas = newArray(files.length);
 for (i=0; i<files.length; i++) {
 
-	if(endsWith(files[i],".jpg"))
+	if(endsWith(files[i],".jpg") || endsWith(files[i],".JPG"))
 	{
-		
+
 		showProgress(i, files.length);
 		open(directory+File.separator+files[i]);
 		run("Set Scale...", "distance=0 known=0 unit=pixel global");
 		title=getTitle();
+		print("Processing... "  + title);
 		run("Duplicate...", " ");
 		rename("dup_"+title);
 		selectWindow(title);
@@ -44,30 +45,39 @@ for (i=0; i<files.length; i++) {
 		rename("posit_"+title);
 		selectWindow("posit_"+title);
 		run("Colour Deconvolution", "vectors=[Methyl Green DAB]");
-		selectWindow("posit_"+title+"-(Colour_3)");
-		close();
+		
 		
 		if(positColour=="yellow"){
+			selectWindow("posit_"+title+"-(Colour_3)");
+			close();
 			selectWindow("posit_"+title+"-(Colour_2)");
 			close();
 			selectWindow("posit_"+title+"-(Colour_1)");
+			setThreshold(255, 255);
+			setOption("BlackBackground", true);
+			run("Convert to Mask");
 		}
 
 		if(positColour=="pink"){
 			selectWindow("posit_"+title+"-(Colour_1)");
 			close();
 			selectWindow("posit_"+title+"-(Colour_2)");
+			close();
+			selectWindow("posit_"+title+"-(Colour_3)");
+			setAutoThreshold("Default");
+			setOption("BlackBackground", true);
+			run("Convert to Mask");
 		}
 		
-		setThreshold(255, 255);
-		setOption("BlackBackground", true);
-		run("Convert to Mask");
+		
 		
 
 		// Select biggest roi
 		run("Analyze Particles...", "size=1000-Infinity exclude add");
 		roiManager("Show All without labels");
 		roiManager("Select", 0); 
+
+		
 
 		//waitForUser("","check the segmentation");
 		run("Fit Rectangle");
@@ -76,7 +86,7 @@ for (i=0; i<files.length; i++) {
 		rrwidth = getResult("RRWidth", 0);
 		
 		//selectWindow("ROI Manager");
-		roiManager("reset");
+		
 		if(isOpen("Results")){
 			selectWindow("Results");
 			run("Close");
@@ -126,12 +136,32 @@ for (i=0; i<files.length; i++) {
 			maxwidthlengthScale = rrwidth;	
 		}
 
-		print("Processing... "  + title);
+		
 		
 		run("Set Scale...", "distance=" + maxwidthlengthScale +" known=" + maxWidthLengthP +" unit=" + unit + " global");
 
-
+		
 		selectWindow(title);
+
+		roiManager("Select", 0); 
+		setBackgroundColor(0, 0, 0);
+		run("Clear", "slice");
+		roiManager("reset");
+
+		run("HSB Stack");
+		run("Stack to Images");
+		selectWindow("Hue");
+		close();
+		selectWindow("Brightness");
+		close();
+
+		selectWindow("Saturation");
+		setAutoThreshold("MaxEntropy dark");
+		setOption("BlackBackground", true);
+		run("Convert to Mask");
+
+		
+		/*
 		run("Split Channels");
 		selectWindow(title+" (blue)");
 		close();
@@ -141,6 +171,7 @@ for (i=0; i<files.length; i++) {
 		setAutoThreshold("Default");
 		setOption("BlackBackground", true);
 		run("Convert to Mask");
+		*/
 
 		//run("Fill Holes");
 		run("Erode");
@@ -148,8 +179,8 @@ for (i=0; i<files.length; i++) {
 		run("Dilate");
 		run("Dilate");
 		// Si sabemos que no toca los bordes, habría que incluir el exclude
-		run("Analyze Particles...", "size=100-Infinity display add");//run("Analyze Particles...", "size=100-Infinity exclude add");
-		selectWindow(title+" (red)");
+		run("Analyze Particles...", "size=10-Infinity display add");//run("Analyze Particles...", "size=100-Infinity exclude add");
+		selectWindow("Saturation");
 		close();
 		selectWindow("dup_"+title);
 		roiManager("Set Color", "red");
@@ -159,6 +190,7 @@ for (i=0; i<files.length; i++) {
 		selectWindow("dup_"+title);
 		saveAs("Jpeg",dirOutput+File.separator+title);
 		//close();
+		
 		//waitForUser("","check the segmentation");
 		//roiManager("Measure");
 
