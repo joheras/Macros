@@ -21,8 +21,13 @@ widthP = -1;
 Dialog.create("Posit colour");
 types = newArray("pink", "yellow");
 Dialog.addChoice("Units:", types);
+typesThreshold = newArray("Default", "Minimum");
+Dialog.addChoice("Threshold:", typesThreshold);
+Dialog.addCheckbox("Objects in border:", false);
 Dialog.show();
 positColour = Dialog.getChoice();
+threshold = Dialog.getChoice();
+border = Dialog.getCheckbox();
 
 areas = newArray(files.length);
 for (i=0; i<files.length; i++) {
@@ -143,12 +148,14 @@ for (i=0; i<files.length; i++) {
 		
 		selectWindow(title);
 
-		roiManager("Select", 0); 
-		setBackgroundColor(0, 0, 0);
-		run("Clear", "slice");
+		 if(positColour=="yellow"){
+		 	roiManager("Select", 0); 
+			setBackgroundColor(255, 255, 255);
+			run("Clear", "slice");
+		}
 		roiManager("reset");
 
-		run("HSB Stack");
+		/*run("HSB Stack");
 		run("Stack to Images");
 		selectWindow("Hue");
 		close();
@@ -157,6 +164,20 @@ for (i=0; i<files.length; i++) {
 
 		selectWindow("Saturation");
 		setAutoThreshold("MaxEntropy dark");
+		setOption("BlackBackground", true);
+		run("Convert to Mask");*/
+
+
+		run("Colour Deconvolution", "vectors=[Methyl Green DAB]");
+		
+		
+		
+		selectWindow(title+"-(Colour_1)");
+		close();
+		selectWindow(title+"-(Colour_3)");
+		close();
+		selectWindow(title+"-(Colour_2)");
+		setAutoThreshold(threshold);//Minimum
 		setOption("BlackBackground", true);
 		run("Convert to Mask");
 
@@ -179,8 +200,12 @@ for (i=0; i<files.length; i++) {
 		run("Dilate");
 		run("Dilate");
 		// Si sabemos que no toca los bordes, habría que incluir el exclude
-		run("Analyze Particles...", "size=10-Infinity display add");//run("Analyze Particles...", "size=100-Infinity exclude add");
-		selectWindow("Saturation");
+		if(border){
+			run("Analyze Particles...", "size=10-Infinity display add");//run("Analyze Particles...", "size=100-Infinity exclude add");
+		}else{
+			run("Analyze Particles...", "size=10-Infinity display exclude add");//run("Analyze Particles...", "size=100-Infinity exclude add");
+		}
+		selectWindow(title+"-(Colour_2)");
 		close();
 		selectWindow("dup_"+title);
 		roiManager("Set Color", "red");
