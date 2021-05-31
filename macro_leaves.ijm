@@ -203,13 +203,26 @@ for (i=0; i<files.length; i++) {
 		run("Dilate");
 		// Si sabemos que no toca los bordes, habría que incluir el exclude
 		if(border){
-			run("Analyze Particles...", "size=10-Infinity display add");//run("Analyze Particles...", "size=100-Infinity exclude add");
+			run("Analyze Particles...", "size=10-Infinity display add");
 		}else{
-			run("Analyze Particles...", "size=10-Infinity display exclude add");//run("Analyze Particles...", "size=100-Infinity exclude add");
+			run("Analyze Particles...", "size=10-Infinity display exclude add");
 		}
+		c = roiManager("count");
+
+		if(c==0){
+			run("Analyze Particles...", "size=10-Infinity display add");
+		}
+
+
+		
 		selectWindow(title+"-(Colour_2)");
 		close();
 		selectWindow("dup_"+title);
+
+
+		
+
+		
 		roiManager("Set Color", "red");
 		roiManager("Set Line Width", 10);
 		roiManager("Show All without labels");
