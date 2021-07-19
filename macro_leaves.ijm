@@ -49,10 +49,11 @@ for (i=0; i<files.length; i++) {
 		// Measure posit
 		rename("posit_"+title);
 		selectWindow("posit_"+title);
-		run("Colour Deconvolution", "vectors=[Methyl Green DAB]");
+		
 		
 		
 		if(positColour=="yellow"){
+			run("Colour Deconvolution", "vectors=[Methyl Green DAB]");
 			selectWindow("posit_"+title+"-(Colour_3)");
 			close();
 			selectWindow("posit_"+title+"-(Colour_2)");
@@ -64,12 +65,13 @@ for (i=0; i<files.length; i++) {
 		}
 
 		if(positColour=="pink"){
+			run("Colour Deconvolution", "vectors=[H&E DAB]");
 			selectWindow("posit_"+title+"-(Colour_1)");
 			close();
-			selectWindow("posit_"+title+"-(Colour_2)");
-			close();
 			selectWindow("posit_"+title+"-(Colour_3)");
-			setAutoThreshold("Default");
+			close();
+			selectWindow("posit_"+title+"-(Colour_2)");
+			setAutoThreshold("MinError");
 			setOption("BlackBackground", true);
 			run("Convert to Mask");
 		}
@@ -80,6 +82,29 @@ for (i=0; i<files.length; i++) {
 		// Select biggest roi
 		run("Analyze Particles...", "size=1000-Infinity exclude add");
 		roiManager("Show All without labels");
+		if(roiManager("count")==0){
+			selectWindow("posit_"+title+"-(Colour_2)");
+			close();
+			selectWindow("posit_"+title);
+			run("Colour Deconvolution", "vectors=[H&E DAB]");
+			selectWindow("posit_"+title+"-(Colour_1)");
+			close();
+			selectWindow("posit_"+title+"-(Colour_3)");
+			close();
+			selectWindow("posit_"+title+"-(Colour_2)");
+			setAutoThreshold("Default");
+			setOption("BlackBackground", true);
+			run("Convert to Mask");
+			run("Analyze Particles...", "size=1000-Infinity exclude add");
+			roiManager("Show All without labels");
+			
+		}
+
+
+		//waitForUser("","check the segmentation");
+
+
+		
 		roiManager("Select", 0); 
 
 		
